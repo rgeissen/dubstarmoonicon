@@ -45,6 +45,7 @@
 #include <stdatomic.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <math.h>
 #include <pthread.h>
 
 #if defined(__linux__) && !defined(_GNU_SOURCE)
@@ -246,6 +247,19 @@ int get_param(void *instance, const char *key, char *buf, int buf_len)
     }
 
     if (!inst) { buf[0] = '\0'; return 0; }
+
+    /* Modulation, live: where the sound has the cutoff now (the filter
+     * envelope on the knob), in the cutoff knob's units: the coefficient's
+     * frequency atan(g) * sr / pi through the inverse of the knob law
+     * 30 Hz * 2^(9 c), clamped to 0..1; {} while the amp envelope is idle */
+    if (!strcmp(key, "live_mod")) {
+        if (inst->engine.env_amp.stage == SUBORG_ENV_IDLE) return snprintf(buf, (size_t)buf_len, "{}");
+        double fc = atan(inst->engine.live_gmod) * inst->engine.sample_rate / M_PI;
+        double c = fc > 0.0 ? log2(fc / 30.0) / 9.0 : 0.0;
+        if (c < 0.0) c = 0.0;
+        if (c > 1.0) c = 1.0;
+        return snprintf(buf, (size_t)buf_len, "{\"cutoff\":%.4f}", c);
+    }
 
     const float v = suborg_get_param(&inst->engine, key);
     if (dsm_is_int_key(key))

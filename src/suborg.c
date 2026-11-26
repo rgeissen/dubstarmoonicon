@@ -488,6 +488,7 @@ void suborg_render(suborg_t *s, float *out_l, float *out_r, int frames)
 
         double gmod = g * (1.0 + envamt * 4.0 * ef);
         if (gmod > 0.5) gmod = 0.5;
+        s->live_gmod = gmod;
 
         double hp = mix - damp * ic2 - ic1;
         double bp = gmod * hp + ic1;

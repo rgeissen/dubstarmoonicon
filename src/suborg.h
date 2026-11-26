@@ -236,6 +236,11 @@ typedef struct {
 
     int     gate;
     double  svf_ic1, svf_ic2;
+
+    /* Modulation, live (read by get_param("live_mod")): the filter
+     * coefficient the last rendered sample used, the knob's g with the
+     * filter envelope on it, after its 0.5 ceiling (SVF g domain) */
+    double  live_gmod;
 } suborg_t;
 
 /* ---------------------------------------------------------------------------
